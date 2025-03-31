@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tela de Projetos</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <style>
+        /* Tema escuro */
+        body {
+            background-color: #343a40;
+            color: white;
+        }
+
+        .container {
+            background-color: #495057;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .btn {
+            border-radius: 5px;
+            font-size: 1.25rem;
+            padding: 10px;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+
+        .modal-content {
+            background-color: #212529;
+            color: white;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid #6c757d;
+        }
+
+        .modal-footer {
+            border-top: 1px solid #6c757d;
+        }
+
+        .form-control {
+            background-color: #495057;
+            border-color: #6c757d;
+            color: white;
+        }
+
+        .form-control:focus {
+            background-color: #343a40;
+            border-color: #28a745;
+        }
+
+        .project-card {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .project-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .project-description {
+            font-size: 1rem;
+            color: #adb5bd;
+        }
+
+        .project-status {
+            font-size: 1rem;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .project-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .project-buttons .col-md-4 {
+            max-width: 300px;
+            margin: 10px;
+        }
+
+        /* Cor de fundo verde quando o status for "Concluído" */
+        .project-card.concluido {
+            background-color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h2 class="text-center mb-4">Projetos</h2>
+
+        <div class="d-flex justify-content-end mb-3">
+            <button class="btn btn-success" data-toggle="modal" data-target="#addProjectModal">Criar Projeto</button>
+        </div>
+
+        <div class="project-buttons">
+            {% for projeto in projetos %}
+                <div class="col-md-4 mb-3">
+                    <!-- Adiciona a classe 'concluido' se o projeto estiver concluído -->
+                    <div class="project-card {% if projeto.status == 'Concluído' %}concluido{% endif %}">
+                        <a href="{{ url_for('projeto.detalhe_projeto', id=projeto.id)}}" class="btn btn-secondary w-100 mb-3">{{ projeto.nome }}</a>
+                        <p class="project-description">{{ projeto.descricao }}</p>
+                        <!-- Exibe o status abaixo da descrição -->
+                        <p class="project-status">{{ projeto.status }}</p>
+                        <div class="d-flex justify-content-around">
+                            {% if projeto.status == 'Em andamento' %}
+                            <a href="{{ url_for('projeto.concluir_projeto', id=projeto.id) }}" class="btn btn-success"><i class="bi bi-check-circle"></i> Concluir</a>
+                            {% endif %}
+                            {% if projeto.status == 'Concluido' %}
+                            <a href="{{ url_for('projeto.reabrir_projeto', id=projeto.id) }}" class="btn btn-success"><i class="bi bi-check-circle"></i> Reabrir</a>
+                            {% endif %}
+                            {% if projeto.status == 'Backlog' %}
+                            <a href="{{ url_for('projeto.executar_projeto', id=projeto.id) }}" class="btn btn-success"><i class="bi bi-check-circle"></i> Executar</a>
+                            {% endif %}
+
+                            <a href="{{ url_for('projeto.excluir_projeto', id=projeto.id) }}" class="btn btn-danger"><i class="bi bi-trash"></i> Excluir</a>
+                        </div>
+                    </div>
+                </div>
+                {% if loop.index % 3 == 0 %}
+                    </div><div class="project-buttons">
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Modal para adicionar projeto -->
+    <div class="modal fade" id="addProjectModal" tabindex="-1" role="dialog" aria-labelledby="addProjectModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addProjectModalLabel">Adicionar Novo Projeto</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ url_for('projeto.criar_projeto') }}" method="POST">
+                        <div class="form-group">
+                            <label for="projectName">Nome do Projeto</label>
+                            <input type="text" class="form-control" id="projectName" name="projectName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="projectDescription">Descrição do Projeto</label>
+                            <textarea class="form-control" id="projectDescription" name="projectDescription" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Adicionar Projeto</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
